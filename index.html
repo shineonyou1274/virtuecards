@@ -17,10 +17,9 @@
             font-family: 'Noto Sans KR', sans-serif; 
             background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
             min-height: 100vh;
-            touch-action: manipulation; /* 모바일 더블탭 줌 방지 */
+            touch-action: manipulation;
         }
         
-        /* 반응형 카드 그리드 */
         .card-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
@@ -29,12 +28,11 @@
 
         @media (max-width: 480px) {
             .card-grid {
-                grid-template-columns: repeat(2, 1fr); /* 작은 폰에선 무조건 2열 */
+                grid-template-columns: repeat(2, 1fr);
                 gap: 8px;
             }
         }
 
-        /* 3D Flip Effect */
         .flip-card {
             background-color: transparent;
             perspective: 1000px;
@@ -67,9 +65,10 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 10px;
+            padding: 12px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.08);
             border: 1px solid rgba(255,255,255,0.4);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
         .flip-card-front {
@@ -83,19 +82,34 @@
             transform: rotateY(180deg);
         }
 
-        /* 선택된 상태 표시 */
+        /* 선택된 상태: 앞면 색상 변경 추가 */
+        .selected-wrapper .flip-card-front {
+            background-color: #dbeafe; /* 연한 파란색 배경 */
+            border-color: #3b82f6;
+            color: #1e40af;
+        }
+
         .selected-wrapper {
             box-shadow: 0 0 0 4px #60a5fa, 0 10px 20px rgba(37, 99, 235, 0.3) !important;
             border-radius: 16px;
         }
 
+        /* 선택된 앞면에 체크 아이콘 표시 (옵션) */
+        .selected-wrapper .flip-card-front::after {
+            content: '✓';
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            font-weight: 900;
+            font-size: 14px;
+            color: #3b82f6;
+        }
+
         .stage-transition { transition: opacity 0.3s ease; }
         
-        /* 모바일용 스크롤바 */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-        /* 결과 화면 카드 반응형 */
         .result-card {
             width: 100%;
             max-width: 180px;
@@ -113,7 +127,7 @@
     <div id="app" class="max-w-6xl mx-auto">
         <header class="mb-6 sm:mb-10 text-center">
             <h1 class="text-2xl sm:text-4xl font-black text-slate-800 tracking-tight">💎 나의 60 가치 나침반</h1>
-            <p class="text-slate-500 mt-2 text-sm sm:text-lg px-4">카드를 뒤집어 당신의 영혼을 울리는 가치를 찾아보세요.</p>
+            <p class="text-slate-500 mt-2 text-sm sm:text-lg px-4">카드를 클릭해 뒤집어서 가치의 상세 설명을 확인해보세요.</p>
         </header>
 
         <!-- Stage 1: Selection -->
@@ -179,7 +193,6 @@
     </div>
 
     <script>
-        // Sound Engine
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -216,7 +229,7 @@
 
         const allValues = [
             { name: "성장", desc: "끊임없이 배우고 어제보다 성숙한 내가 되기 위해 정진합니다." },
-            { name: "도전", desc: "실패를 두려워하지 않고 새로운 영역에 기꺼이 발을 내딛습니다." },
+            { name: "도전", desc: "실패를 두려워하지 않고 새로운 영역에 기꺼이 맞섭니다." },
             { name: "전문성", desc: "내가 선택한 분야에서 최고의 실력을 쌓습니다." },
             { name: "자유", desc: "내 삶의 주인이 되어 스스로 선택하고 책임지는 삶을 지향합니다." },
             { name: "선한 영향력", desc: "나의 행동이 타인에게 긍정적인 변화를 일으키길 바랍니다." },
@@ -227,7 +240,7 @@
             { name: "공정", desc: "어떠한 상황에서도 편견 없이 바르게 행동합니다." },
             { name: "관계", desc: "주변 사람들과 깊은 유대감을 형성하고 소통하는 것을 즐깁니다." },
             { name: "감사", desc: "주어진 작은 일상에서도 기쁨과 고마움을 찾아냅니다." },
-            { name: "끈기", desc: "한번 시작한 일은 어떠한 난관이 있어도 끝까지 마무리지어냅니다." },
+            { name: "끈기", desc: "한번 시작한 일은 어떠한 난관이 있어도 마무리지어냅니다." },
             { name: "나눔", desc: "내가 가진 것을 주변과 아낌없이 공유합니다." },
             { name: "낙천", desc: "밝고 긍정적인 태도로 삶의 파도를 넘깁니다." },
             { name: "다양성", desc: "서로 다른 생각과 가치를 존중합니다." },
@@ -245,10 +258,10 @@
             { name: "부유", desc: "물질적, 정신적 풍요를 쌓습니다." },
             { name: "사랑", desc: "나를 사랑하고, 타인을 따뜻하게 품습니다." },
             { name: "성실", desc: "오늘의 한 걸음을 묵묵히 성실하게 걷습니다." },
-            { name: "성취", desc: "스스로 세운 목표를 달성했을 때 희열을 느낍니다." },
+            { name: "성취", desc: "목표를 달성했을 때 보람과 희열을 느킵니다." },
             { name: "소속감", desc: "공동체 안에서 함께 협력하며 조화를 이룹니다." },
             { name: "신뢰", desc: "믿음을 통해 누구나 기댈 수 있는 사람이 됩니다." },
-            { name: "안정", desc: "평온하고 예측 가능한 삶에서 편안함을 느낍니다." },
+            { name: "안정", desc: "평온하고 예측 가능한 삶에서 편안함을 느킵니다." },
             { name: "애국", desc: "사회와 국가의 발전을 위해 책임감을 갖습니다." },
             { name: "열정", desc: "가슴 뛰는 일에 모든 에너지를 쏟아붓습니다." },
             { name: "예술", desc: "일상에서 아름다움을 발견하고 창조합니다." },
@@ -272,7 +285,7 @@
             { name: "호기심", desc: "세상을 향해 끊임없이 질문합니다." },
             { name: "절제", desc: "스스로를 다스리고 중용을 지킵니다." },
             { name: "유연성", desc: "변화에 유연하게 대처하며 대안을 찾습니다." },
-            { name: "여유", desc: "삶의 과정 자체를 즐기며 마음의 쉼표를 찍습니다." },
+            { name: "여유", desc: "과정 자체를 즐기며 마음의 쉼표를 찍습니다." },
             { name: "균형", desc: "일과 삶의 건강한 조화를 이룹니다." },
             { name: "유대감", desc: "타인과 깊이 연결되어 서로를 응원합니다." }
         ];
@@ -288,12 +301,13 @@
                 flipCard.innerHTML = `
                     <div class="flip-card-inner">
                         <div class="flip-card-front" onclick="handleFlip(this.parentElement.parentElement)">
-                            <div class="text-[9px] text-slate-300 mb-4 uppercase tracking-tighter">Flip</div>
+                            <div class="text-[9px] text-slate-300 mb-4 uppercase tracking-tighter">Flip to see</div>
                             <div class="text-base sm:text-lg font-bold">${item.name}</div>
                         </div>
-                        <div class="flip-card-back">
-                            <div class="text-[11px] sm:text-[13px] leading-tight mb-4 px-1">${item.desc}</div>
-                            <button onclick="toggleSelect('${item.name}', event)" class="select-btn bg-white text-blue-600 w-full py-2 rounded-xl font-bold text-xs sm:text-sm shadow-sm">선택</button>
+                        <div class="flip-card-back" onclick="handleFlip(this.parentElement.parentElement)">
+                            <div class="text-xs font-bold mb-2 opacity-80 uppercase tracking-widest">${item.name}</div>
+                            <div class="text-[11px] sm:text-[13px] leading-snug mb-4 px-1">${item.desc}</div>
+                            <button onclick="toggleSelect('${item.name}', event)" class="select-btn bg-white text-blue-600 w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-md active:scale-95 transition-transform">선택하기</button>
                         </div>
                     </div>
                 `;
@@ -315,14 +329,14 @@
             if (selectedCards.has(name)) {
                 selectedCards.delete(name);
                 inner.classList.remove('selected-wrapper');
-                btn.innerText = "선택";
-                btn.className = "select-btn bg-white text-blue-600 w-full py-2 rounded-xl font-bold shadow-sm";
+                btn.innerText = "선택하기";
+                btn.className = "select-btn bg-white text-blue-600 w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-md active:scale-95 transition-transform";
             } else {
                 playSound('select');
                 selectedCards.add(name);
                 inner.classList.add('selected-wrapper');
-                btn.innerText = "V 선택됨";
-                btn.className = "select-btn bg-green-400 text-white w-full py-2 rounded-xl font-bold";
+                btn.innerText = "✓ 선택됨";
+                btn.className = "select-btn bg-green-400 text-white w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-inner active:scale-95 transition-transform";
             }
             updateUI();
         }
@@ -376,7 +390,7 @@
             const fBtn = document.getElementById('finalizeBtn');
             if (selectedCards.size === 5) {
                 fBtn.disabled = false;
-                fBtn.className = "w-full sm:w-auto bg-green-600 text-white px-12 py-4 rounded-2xl font-bold text-lg shadow-xl";
+                fBtn.className = "w-full sm:w-auto bg-green-600 text-white px-12 py-4 rounded-2xl font-bold text-lg shadow-xl active:scale-95 transition-transform";
                 fBtn.innerText = "최종 분석 보기";
             } else {
                 fBtn.disabled = true;
