@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>60 가치 나침반 - 반응형 에디션</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700;900&display=swap');
+        
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --bg-gradient: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+        }
+
+        body { 
+            font-family: 'Noto Sans KR', sans-serif; 
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* 반응형 그리드 시스템 */
+        .card-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
+            gap: 12px; 
+        }
+
+        @media (min-width: 640px) {
+            .card-grid { 
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
+                gap: 20px; 
+            }
+        }
+
+        /* 3D Flip Effect */
+        .flip-card {
+            background-color: transparent;
+            perspective: 1000px;
+            aspect-ratio: 1 / 1.4;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-style: preserve-3d;
+        }
+
+        .flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+
+        .flip-card-front {
+            background: #ffffff;
+            color: #334e68;
+        }
+
+        .flip-card-back {
+            background: linear-gradient(145deg, var(--primary), var(--primary-dark));
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        /* 선택 효과 */
+        .selected-wrapper {
+            box-shadow: 0 0 0 4px #60a5fa, 0 15px 30px rgba(37, 99, 235, 0.3) !important;
+            border-radius: 20px;
+        }
+
+        .stage-transition { transition: opacity 0.4s ease; }
+        
+        /* 하단 버튼 영역 보호 */
+        .safe-bottom { padding-bottom: 120px; }
+
+        /* 모바일 텍스트 최적화 */
+        @media (max-width: 640px) {
+            .card-title { font-size: 1.1rem; }
+            .card-desc { font-size: 0.75rem; line-height: 1.3; }
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-6 md:p-10">
+    <div id="app" class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <header class="mb-8 sm:mb-12 text-center">
+            <h1 class="text-3xl sm:text-5xl font-black text-slate-800 tracking-tight mb-3">💎 나의 60 가치 나침반</h1>
+            <p class="text-slate-500 text-sm sm:text-lg">카드를 터치해 뒤집고, 당신의 핵심 가치를 골라보세요.</p>
+        </header>
+
+        <!-- Stage 1: Selection -->
+        <div id="stage1" class="stage-transition safe-bottom">
+            <div class="bg-white/60 backdrop-blur-xl rounded-[2rem] sm:rounded-[3rem] shadow-xl p-5 sm:p-10 mb-8 border border-white/50">
+                <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+                    <div class="text-center sm:text-left">
+                        <h2 class="text-xl sm:text-2xl font-bold text-slate-800">1단계: 가치 탐색</h2>
+                        <p class="text-slate-500 text-xs sm:text-sm">설명을 읽고 10개 이상 선택하세요.</p>
+                    </div>
+                    <div class="bg-blue-600 px-6 sm:px-8 py-2 sm:py-3 rounded-full shadow-lg flex items-center gap-3">
+                        <span id="counter" class="text-2xl sm:text-3xl font-black text-white">0</span>
+                        <div class="h-5 w-px bg-blue-400"></div>
+                        <span class="text-blue-50 text-[10px] sm:text-xs font-bold uppercase tracking-widest">Selected</span>
+                    </div>
+                </div>
+                
+                <div id="cardContainer" class="card-grid">
+                    <!-- Cards will be injected by JS -->
+                </div>
+            </div>
+            
+            <!-- Mobile Sticky Button Container -->
+            <div class="fixed bottom-0 left-0 w-full p-4 sm:p-8 bg-gradient-to-t from-[#d9e2ec] via-[#d9e2ec]/90 to-transparent pointer-events-none">
+                <div class="max-w-6xl mx-auto flex justify-center pointer-events-auto">
+                    <button onclick="goToStage2()" id="nextBtn" class="w-full sm:w-auto bg-slate-400 text-white px-10 sm:px-20 py-4 sm:py-5 rounded-2xl font-bold shadow-2xl transition-all cursor-not-allowed opacity-90 backdrop-blur-md" disabled>
+                        가치를 더 선택해주세요
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stage 2: Filtering -->
+        <div id="stage2" class="hidden stage-transition safe-bottom">
+            <div class="bg-white/80 backdrop-blur-xl rounded-[2rem] sm:rounded-[3rem] shadow-xl p-6 sm:p-10 mb-8 border border-white">
+                <h2 class="text-2xl sm:text-3xl font-bold text-slate-800 mb-2 text-center">2단계: 핵심 가치 압축</h2>
+                <p class="text-blue-600 text-sm sm:text-lg font-medium mb-8 text-center">가장 소중한 5가지만 남기고 제외하세요.</p>
+                <div id="filterContainer" class="card-grid"></div>
+            </div>
+            <div class="fixed bottom-0 left-0 w-full p-4 sm:p-8 bg-gradient-to-t from-[#d9e2ec] via-[#d9e2ec]/90 to-transparent flex flex-col sm:flex-row justify-center items-center gap-4">
+                <button onclick="backToStage1()" class="text-slate-500 font-bold hover:text-slate-800 transition-colors py-2 px-4 order-2 sm:order-1">← 이전 단계</button>
+                <button onclick="finalize()" id="finalizeBtn" class="w-full sm:w-auto bg-blue-600 text-white px-10 sm:px-16 py-4 sm:py-5 rounded-2xl font-bold shadow-2xl hover:bg-blue-700 transition-all order-1 sm:order-2">
+                    결과 확인하기
+                </button>
+            </div>
+        </div>
+
+        <!-- Stage 3: Result -->
+        <div id="result" class="hidden stage-transition">
+            <div class="bg-white rounded-[2.5rem] sm:rounded-[4rem] shadow-2xl p-6 sm:p-16 text-center border border-white relative overflow-hidden mb-10">
+                <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-400 via-indigo-500 to-blue-400"></div>
+                <div class="inline-block p-4 sm:p-6 bg-blue-50 rounded-full mb-6 sm:mb-8">
+                    <span class="text-4xl sm:text-6xl">🏆</span>
+                </div>
+                <h2 class="text-2xl sm:text-4xl font-black text-slate-900 mb-8 tracking-tight">당신의 인생을 밝히는 5가지 가치</h2>
+                
+                <div id="finalValues" class="grid grid-cols-2 sm:flex sm:flex-wrap justify-center gap-4 sm:gap-6 mb-12">
+                    <!-- Final Result Cards -->
+                </div>
+                
+                <div class="bg-slate-50 p-6 sm:p-12 rounded-[2rem] sm:rounded-[3rem] text-left border border-slate-200 max-w-4xl mx-auto shadow-inner">
+                    <h3 class="font-bold text-slate-900 text-lg sm:text-2xl mb-4 sm:mb-6 flex items-center gap-3">
+                        <span class="bg-blue-600 w-1.5 sm:w-2 h-6 sm:h-8 rounded-full"></span>
+                        나의 가치 철학 분석
+                    </h3>
+                    <div id="aiAnalysis" class="text-slate-700 leading-relaxed text-sm sm:text-xl space-y-4 sm:space-y-6"></div>
+                </div>
+                
+                <button onclick="resetApp()" class="mt-10 sm:mt-16 text-slate-400 hover:text-blue-600 font-medium transition-colors">
+                    처음부터 다시 시작하기
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sound Engine
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+            if (type === 'flip') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            } else if (type === 'select') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(800, now); osc.frequency.exponentialRampToValueAtTime(1200, now + 0.05);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                osc.start(now); osc.stop(now + 0.15);
+            } else if (type === 'deselect') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(600, now); osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            } else if (type === 'success') {
+                [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+                    const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+                    o.type = 'triangle'; o.connect(g); g.connect(audioCtx.destination);
+                    o.frequency.setValueAtTime(freq, now + i * 0.1);
+                    g.gain.setValueAtTime(0.1, now + i * 0.1); g.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.4);
+                    o.start(now + i * 0.1); o.stop(now + i * 0.1 + 0.4);
+                });
+            }
+        }
+
+        const allValues = [
+            { name: "성장", desc: "끊임없이 배우고 어제보다 성숙한 내가 되기 위해 정진합니다." },
+            { name: "도전", desc: "실패를 두려워하지 않고 새로운 영역에 기꺼이 발을 내딛습니다." },
+            { name: "전문성", desc: "내가 선택한 분야에서 타의 추종을 불허하는 실력을 쌓습니다." },
+            { name: "자유", desc: "내 삶의 주인이 되어 스스로 선택하고 책임지는 삶을 지향합니다." },
+            { name: "선한 영향력", desc: "나의 존재와 행동이 타인에게 긍정적인 변화를 일으키길 바랍니다." },
+            { name: "가족", desc: "언제나 내 편이 되어주는 소중한 사람들을 가장 우선순위에 둡니다." },
+            { name: "건강", desc: "몸과 마음의 에너지를 관리하는 것이 모든 삶의 기초임을 믿습니다." },
+            { name: "겸손", desc: "자신의 성취를 과시하지 않고 늘 배우는 자세를 유지합니다." },
+            { name: "경청", desc: "내 주장을 앞세우기보다 타인의 진심어린 소리에 귀를 기울입니다." },
+            { name: "공정", desc: "어떠한 상황에서도 편견 없이 정당하고 바르게 행동합니다." },
+            { name: "관계", desc: "주변 사람들과 깊은 유대감을 형성하고 소통하는 것을 즐깁니다." },
+            { name: "감사", desc: "나에게 주어진 작은 일상에서도 기쁨과 고마움을 찾아냅니다." },
+            { name: "끈기", desc: "한번 시작한 일은 어떠한 난관이 있어도 끝까지 마무리지어냅니다." },
+            { name: "나눔", desc: "내가 가진 지식, 시간, 물질을 주변과 아낌없이 공유합니다." },
+            { name: "낙천", desc: "밝고 긍정적인 태도로 삶의 파도를 유연하게 넘깁니다." },
+            { name: "다양성", desc: "서로 다른 생각과 가치를 틀림이 아닌 다름으로 존중합니다." },
+            { name: "도덕", desc: "누가 보지 않아도 양심에 어긋나지 않는 올바른 길을 걷습니다." },
+            { name: "도움", desc: "도움이 필요한 곳에 기꺼이 손을 내밀어 함께 나아갑니다." },
+            { name: "독립", desc: "의존하지 않고 스스로의 힘으로 인생을 개척해 나갑니다." },
+            { name: "명예", desc: "자신과 공동체에 부끄럽지 않은 품위 있는 삶을 추구합니다." },
+            { name: "모험", desc: "안정보다는 낯선 곳에서의 짜릿한 경험과 발견을 선호합니다." },
+            { name: "몰입", desc: "잡념을 버리고 현재 하고 있는 일에 온 정신을 집중합니다." },
+            { name: "무소유", desc: "불필요한 소유를 줄이고 내면의 풍요로움에 집중합니다." },
+            { name: "변화", desc: "익숙함에 안주하지 않고 끊임없이 새로운 모습으로 진화합니다." },
+            { name: "배려", desc: "나보다 상대방의 마음을 먼저 헤아리고 따뜻하게 대합니다." },
+            { name: "배움", desc: "지식과 지혜를 향한 갈구로 평생 동안 공부하는 삶을 삽니다." },
+            { name: "봉사", desc: "세상을 위해 헌신하며 삶의 진정한 보람과 가치를 찾습니다." },
+            { name: "부유", desc: "자유로운 삶을 가능하게 하는 물질적, 정신적 풍요를 쌓습니다." },
+            { name: "사랑", desc: "나를 사랑하고, 타인을 따뜻하게 품으며 조건 없이 아낍니다." },
+            { name: "성실", desc: "거창한 목표보다 오늘의 한 걸음을 묵묵히 성실하게 걷습니다." },
+            { name: "성취", desc: "스스로 세운 목표를 달성했을 때 가장 큰 희열을 느낍니다." },
+            { name: "소속감", desc: "공동체 안에서 함께 협력하며 조화를 이루는 것을 중시합니다." },
+            { name: "신뢰", desc: "말과 행동의 일치를 통해 누구나 믿고 기댈 수 있는 사람이 됩니다." },
+            { name: "안정", desc: "급격한 변화보다 평온하고 예측 가능한 삶에서 편안함을 느낍니다." },
+            { name: "애국", desc: "내가 속한 사회와 국가의 발전을 위해 책임감을 갖습니다." },
+            { name: "열정", desc: "가슴 뛰는 일을 만났을 때 모든 에너지를 쏟아부어 집중합니다." },
+            { name: "예술", desc: "일상에서 아름다움을 발견하고 나만의 방식으로 창조합니다." },
+            { name: "용기", desc: "두려움이 없는 것이 아니라, 두려움에도 불구하고 행동합니다." },
+            { name: "유머", desc: "어려운 순간에도 웃음을 잃지 않고 삶을 즐겁게 만듭니다." },
+            { name: "유능", desc: "탁월한 능력을 발휘하여 문제를 명쾌하게 해결해 나갑니다." },
+            { name: "인정", desc: "나의 수고와 타인의 가치를 솔직하게 인정하고 칭찬합니다." },
+            { name: "인내", desc: "결실을 맺을 때까지 서두르지 않고 차분하게 기다립니다." },
+            { name: "정직", desc: "자신을 속이지 않고 모든 일을 참되고 투명하게 대합니다." },
+            { name: "정의", desc: "사회적 약자를 보호하고 공정한 질서를 실천하는 삶을 삽니다." },
+            { name: "존중", desc: "상대방의 인격과 가치를 소중히 여기며 예의를 지킵니다." },
+            { name: "질서", desc: "정해진 규칙과 체계를 존중하며 조화로운 사회를 만듭니다." },
+            { name: "지혜", desc: "지식을 넘어 본질을 꿰뚫는 통찰력으로 현명하게 판단합니다." },
+            { name: "창의", desc: "당연한 것에 의문을 던져 새로운 관점과 가치를 만들어냅니다." },
+            { name: "책임", desc: "내가 한 말과 행동의 결과에 대해 끝까지 책임을 집니다." },
+            { name: "평화", desc: "갈등을 치유하고 마음의 안식과 조화를 찾아 나갑니다." },
+            { name: "함께", desc: "혼자 가면 빠르지만 함께 가면 멀리 갈 수 있음을 믿습니다." },
+            { name: "효도", desc: "부모님을 공경하고 그 은혜에 보답하는 마음을 실천합니다." },
+            { name: "회복탄력성", desc: "넘어져도 다시 일어나는 마음의 근력을 키우며 성장합니다." },
+            { name: "진정성", desc: "가면을 쓰지 않고 진실한 나의 모습 그대로 소통합니다." },
+            { name: "호기심", desc: "세상의 모든 현상에 대해 '왜?'라는 질문을 멈추지 않습니다." },
+            { name: "절제", desc: "과유불급을 경계하며 스스로를 다스리고 중용을 지킵니다." },
+            { name: "유연성", desc: "변화하는 상황에 유연하게 대처하며 새로운 대안을 찾아냅니다." },
+            { name: "여유", desc: "서두르지 않고 삶의 과정 자체를 즐기며 마음의 쉼표를 찍습니다." },
+            { name: "균형", desc: "일과 삶, 내면과 외면의 건강한 조화를 통해 삶의 질을 높입니다." },
+            { name: "유대감", desc: "타인과 정서적으로 깊이 연결되어 서로를 응원하고 지지합니다." }
+        ];
+
+        let selectedCards = new Set();
+
+        function init() {
+            const container = document.getElementById('cardContainer');
+            allValues.forEach(item => {
+                const flipCard = document.createElement('div');
+                flipCard.className = "flip-card";
+                flipCard.id = `card-${item.name}`;
+                flipCard.innerHTML = `
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front" onclick="handleFlip(this.parentElement.parentElement)">
+                            <div class="text-[9px] text-slate-300 mb-4 tracking-widest uppercase">Tap to flip</div>
+                            <div class="card-title font-bold text-slate-700">${item.name}</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <div class="card-desc text-[11px] leading-relaxed mb-4 font-medium px-1 opacity-90">${item.desc}</div>
+                            <div class="flex flex-col gap-2 w-full px-1">
+                                <button onclick="toggleSelect('${item.name}', event)" class="select-btn bg-white text-blue-600 py-2 rounded-xl text-xs font-bold shadow-md active:scale-95 transition-all">
+                                    선택하기
+                                </button>
+                                <button onclick="handleFlip(this.parentElement.parentElement.parentElement.parentElement)" class="text-[9px] text-blue-100 opacity-60 mt-1 uppercase">뒤집기</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(flipCard);
+            });
+        }
+
+        function handleFlip(el) { playSound('flip'); el.classList.toggle('flipped'); }
+
+        function toggleSelect(name, event) {
+            event.stopPropagation();
+            const cardEl = document.getElementById(`card-${name}`);
+            const inner = cardEl.querySelector('.flip-card-inner');
+            const btn = cardEl.querySelector('.select-btn');
+
+            if (selectedCards.has(name)) {
+                playSound('deselect'); selectedCards.delete(name);
+                inner.classList.remove('selected-wrapper');
+                btn.innerText = "선택하기";
+                btn.className = "select-btn bg-white text-blue-600 py-2 rounded-xl text-xs font-bold shadow-md";
+            } else {
+                playSound('select'); selectedCards.add(name);
+                inner.classList.add('selected-wrapper');
+                btn.innerText = "선택됨 ✓";
+                btn.className = "select-btn bg-green-400 text-white py-2 rounded-xl text-xs font-bold shadow-inner";
+            }
+            updateUI();
+        }
+
+        function updateUI() {
+            const count = selectedCards.size;
+            document.getElementById('counter').innerText = count;
+            const btn = document.getElementById('nextBtn');
+            if (count >= 10) {
+                btn.disabled = false;
+                btn.className = "w-full sm:w-auto bg-blue-600 text-white px-10 sm:px-20 py-4 sm:py-5 rounded-2xl font-bold shadow-2xl hover:scale-105 active:scale-95 transition-all pointer-events-auto";
+                btn.innerText = "다음 단계로 가기";
+            } else {
+                btn.disabled = true;
+                btn.className = "w-full sm:w-auto bg-slate-400 text-white px-10 sm:px-20 py-4 sm:py-5 rounded-2xl font-bold shadow-2xl opacity-90 pointer-events-none";
+                btn.innerText = `${10 - count}개 더 선택해주세요`;
+            }
+        }
+
+        function goToStage2() {
+            playSound('success');
+            document.getElementById('stage1').classList.add('hidden');
+            document.getElementById('stage2').classList.remove('hidden');
+            renderStage2();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function backToStage1() {
+            document.getElementById('stage2').classList.add('hidden');
+            document.getElementById('stage1').classList.remove('hidden');
+        }
+
+        function renderStage2() {
+            const container = document.getElementById('filterContainer');
+            container.innerHTML = '';
+            Array.from(selectedCards).forEach((name) => {
+                const item = allValues.find(v => v.name === name);
+                const card = document.createElement('div');
+                card.className = "bg-blue-500 text-white p-4 rounded-2xl shadow-lg flex flex-col justify-center items-center aspect-square text-center cursor-pointer hover:bg-red-500 active:scale-95 transition-all group relative overflow-hidden";
+                card.innerHTML = `
+                    <div class="font-bold text-lg mb-1 group-hover:opacity-0">${item.name}</div>
+                    <div class="text-[9px] opacity-70 group-hover:opacity-0 line-clamp-2">${item.desc}</div>
+                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 font-black text-sm">제외</div>
+                `;
+                card.onclick = () => { playSound('deselect'); selectedCards.delete(name); renderStage2(); };
+                container.appendChild(card);
+            });
+            
+            const finalizeBtn = document.getElementById('finalizeBtn');
+            if (selectedCards.size === 5) {
+                finalizeBtn.disabled = false;
+                finalizeBtn.className = "w-full sm:w-auto bg-green-600 text-white px-16 py-4 sm:py-5 rounded-2xl font-bold shadow-2xl hover:bg-green-700 active:scale-95 transition-all";
+                finalizeBtn.innerText = "최종 분석 결과 보기";
+            } else {
+                finalizeBtn.disabled = true;
+                finalizeBtn.className = "w-full sm:w-auto bg-slate-400 text-white px-16 py-4 sm:py-5 rounded-2xl font-bold opacity-50";
+                finalizeBtn.innerText = `현재 ${selectedCards.size}개 (5개 선택)`;
+            }
+        }
+
+        function finalize() {
+            playSound('success');
+            const finalArray = Array.from(selectedCards);
+            document.getElementById('stage2').classList.add('hidden');
+            document.getElementById('result').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            const finalDiv = document.getElementById('finalValues');
+            finalArray.forEach(name => {
+                const item = allValues.find(v => v.name === name);
+                const card = document.createElement('div');
+                card.className = "flex flex-col items-center justify-center w-full sm:w-44 h-48 sm:h-56 bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-[1.5rem] sm:rounded-[2rem] shadow-xl p-5";
+                card.innerHTML = `<div class="font-black text-xl sm:text-2xl mb-3">${item.name}</div><div class="text-[10px] sm:text-xs opacity-80 leading-relaxed font-light">${item.desc}</div>`;
+                finalDiv.appendChild(card);
+            });
+
+            document.getElementById('aiAnalysis').innerHTML = `
+                <p>당신이 선택한 <b>[${finalArray.join(', ')}]</b>의 가치들은 당신이 삶을 바라보는 가장 진실된 시선입니다.</p>
+                <p>특히 <b>${finalArray[0]}</b>과(와) <b>${finalArray[1]}</b>의 조합은 당신이 중요하게 생각하는 에너지의 원천입니다. 이 가치들은 당신이 삶의 폭풍우 속에서도 흔들리지 않고 나아갈 수 있게 해주는 뿌리가 될 것입니다.</p>
+                <p class="font-black text-blue-600 mt-6 sm:mt-10 text-lg sm:text-2xl text-center">당신의 가치가 당신의 삶을 완성합니다.</p>
+            `;
+        }
+
+        function resetApp() { location.reload(); }
+        window.onload = init;
+    </script>
+</body>
+</html>
