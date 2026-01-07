@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>60 가치 카드 탐색기 - 3단계 최종 압축</title>
+    <title>60 가치 카드 탐색기 - 컴팩트 뷰</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700;900&display=swap');
@@ -20,16 +20,17 @@
             touch-action: manipulation;
         }
         
+        /* 카드 그리드 크기 축소 */
         .card-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
-            gap: 12px; 
+            grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); 
+            gap: 10px; 
         }
 
         @media (max-width: 480px) {
             .card-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 8px;
+                grid-template-columns: repeat(3, 1fr); /* 모바일에서도 3열로 더 작게 표시 */
+                gap: 6px;
             }
         }
 
@@ -60,13 +61,13 @@
             height: 100%;
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
-            border-radius: 16px;
+            border-radius: 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            padding: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
             border: 1px solid rgba(255,255,255,0.4);
             transition: background-color 0.3s ease, border-color 0.3s ease;
         }
@@ -82,6 +83,7 @@
             transform: rotateY(180deg);
         }
 
+        /* 선택된 상태: 앞면 시각 효과 */
         .selected-wrapper .flip-card-front {
             background-color: #dbeafe;
             border-color: #3b82f6;
@@ -89,17 +91,17 @@
         }
 
         .selected-wrapper {
-            box-shadow: 0 0 0 4px #60a5fa, 0 10px 20px rgba(37, 99, 235, 0.3) !important;
-            border-radius: 16px;
+            box-shadow: 0 0 0 3px #60a5fa, 0 8px 16px rgba(37, 99, 235, 0.25) !important;
+            border-radius: 12px;
         }
 
         .selected-wrapper .flip-card-front::after {
             content: '✓';
             position: absolute;
-            top: 8px;
-            right: 10px;
+            top: 6px;
+            right: 8px;
             font-weight: 900;
-            font-size: 14px;
+            font-size: 12px;
             color: #3b82f6;
         }
 
@@ -110,14 +112,8 @@
 
         .result-card {
             width: 100%;
-            max-width: 180px;
+            max-width: 160px;
             aspect-ratio: 1 / 1.3;
-        }
-
-        @media (max-width: 640px) {
-            .result-card {
-                max-width: 140px;
-            }
         }
 
         #confirmModal {
@@ -135,32 +131,32 @@
         }
     </style>
 </head>
-<body class="p-3 sm:p-6 md:p-10">
-    <div id="app" class="max-w-6xl mx-auto">
-        <header class="mb-6 sm:mb-10 text-center">
-            <h1 class="text-2xl sm:text-4xl font-black text-slate-800 tracking-tight">💎 나의 60 가치 나침반</h1>
-            <p class="text-slate-500 mt-2 text-sm sm:text-lg px-4">가장 소중한 3가지 가치를 찾는 여정입니다.</p>
+<body class="p-2 sm:p-4 md:p-8">
+    <div id="app" class="max-w-5xl mx-auto">
+        <header class="mb-4 sm:mb-6 text-center">
+            <h1 class="text-xl sm:text-3xl font-black text-slate-800 tracking-tight">💎 나의 60 가치 나침반</h1>
+            <p class="text-slate-500 mt-1 text-xs sm:text-base px-4">가장 소중한 3가지 가치를 찾는 여정입니다.</p>
         </header>
 
         <!-- Stage 1: Selection -->
         <div id="stage1" class="stage-transition">
-            <div class="bg-white/70 backdrop-blur-md rounded-3xl shadow-xl p-4 sm:p-8 mb-6 border border-white/50">
-                <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-                    <div class="text-center sm:text-left">
-                        <h2 class="text-xl sm:text-2xl font-bold text-slate-800">1단계: 가치 탐색</h2>
-                        <p class="text-xs sm:text-sm text-slate-500">카드를 뒤집어보고 10개 이상 선택하세요.</p>
+            <div class="bg-white/70 backdrop-blur-md rounded-2xl shadow-lg p-3 sm:p-6 mb-4 border border-white/50">
+                <div class="flex flex-row justify-between items-center mb-4">
+                    <div class="text-left">
+                        <h2 class="text-lg sm:text-xl font-bold text-slate-800">1단계: 가치 탐색</h2>
+                        <p class="hidden sm:block text-xs text-slate-500">카드를 뒤집어보고 10개 이상 선택하세요.</p>
                     </div>
-                    <div class="bg-blue-600 px-6 py-2 rounded-full shadow-lg flex items-center gap-2">
-                        <span id="counter" class="text-2xl font-black text-white">0</span>
-                        <span class="text-blue-100 text-xs font-bold uppercase">Selected</span>
+                    <div class="bg-blue-600 px-4 py-1.5 rounded-full shadow-md flex items-center gap-2">
+                        <span id="counter" class="text-xl font-black text-white">0</span>
+                        <span class="text-blue-100 text-[10px] font-bold uppercase">Selected</span>
                     </div>
                 </div>
                 
                 <div id="cardContainer" class="card-grid"></div>
             </div>
             
-            <div class="sticky bottom-4 sm:bottom-10 text-center z-50">
-                <button onclick="goToStage2()" id="nextBtn" class="w-full sm:w-auto bg-slate-300 text-white px-10 py-4 rounded-2xl font-bold shadow-2xl transition-all cursor-not-allowed text-lg" disabled>
+            <div class="sticky bottom-4 text-center z-50">
+                <button onclick="goToStage2()" id="nextBtn" class="w-full sm:w-auto bg-slate-300 text-white px-8 py-3 rounded-xl font-bold shadow-xl transition-all cursor-not-allowed text-base" disabled>
                     10개 이상 선택해주세요
                 </button>
             </div>
@@ -168,64 +164,64 @@
 
         <!-- Stage 2: Filtering to 5 -->
         <div id="stage2" class="hidden stage-transition">
-            <div class="bg-white/80 backdrop-blur-md rounded-3xl shadow-xl p-4 sm:p-8 mb-6 border border-white">
-                <h2 class="text-2xl font-bold text-slate-800 mb-2 text-center">2단계: 핵심 가치 고르기</h2>
-                <p class="text-blue-600 text-sm sm:text-lg font-medium mb-6 text-center">1차적으로 5가지만 남을 때까지 제외하세요.</p>
+            <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg p-3 sm:p-6 mb-4 border border-white">
+                <h2 class="text-xl font-bold text-slate-800 mb-1 text-center">2단계: 핵심 가치 고르기</h2>
+                <p class="text-blue-600 text-xs sm:text-sm font-medium mb-4 text-center">1차적으로 5가지만 남을 때까지 제외하세요.</p>
                 <div id="filterContainer2" class="card-grid"></div>
             </div>
-            <div class="flex flex-col sm:flex-row justify-center items-center gap-4 mb-10">
-                <button onclick="backToStage1()" class="text-slate-500 font-bold p-2">← 다시 고르기</button>
-                <button onclick="goToStage3()" id="stage3Btn" class="w-full sm:w-auto bg-blue-600 text-white px-12 py-4 rounded-2xl font-bold shadow-2xl hover:bg-blue-700 transition-all text-lg">
-                    3단계로 이동하기
+            <div class="flex flex-row justify-center items-center gap-4 mb-6">
+                <button onclick="backToStage1()" class="text-slate-500 font-bold p-2 text-sm">← 다시 고르기</button>
+                <button onclick="goToStage3()" id="stage3Btn" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition-all text-base">
+                    3단계 이동
                 </button>
             </div>
         </div>
 
         <!-- Stage 3: Filtering to 3 -->
         <div id="stage3" class="hidden stage-transition">
-            <div class="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl p-4 sm:p-8 mb-6 border border-blue-100">
-                <h2 class="text-2xl font-bold text-slate-800 mb-2 text-center">3단계: 최종 가치 확정</h2>
-                <p class="text-indigo-600 text-sm sm:text-lg font-medium mb-6 text-center">인생에서 가장 포기할 수 없는 3가지만 남겨주세요.</p>
+            <div class="bg-white/90 backdrop-blur-md rounded-2xl shadow-lg p-3 sm:p-6 mb-4 border border-blue-100">
+                <h2 class="text-xl font-bold text-slate-800 mb-1 text-center">3단계: 최종 가치 확정</h2>
+                <p class="text-indigo-600 text-xs sm:text-sm font-medium mb-4 text-center">인생의 정수 3가지만 남겨주세요.</p>
                 <div id="filterContainer3" class="card-grid"></div>
             </div>
-            <div class="flex flex-col sm:flex-row justify-center items-center gap-4 mb-10">
-                <button onclick="backToStage2()" class="text-slate-500 font-bold p-2">← 이전 단계로</button>
-                <button onclick="finalize()" id="finalizeBtn" class="w-full sm:w-auto bg-blue-600 text-white px-12 py-4 rounded-2xl font-bold shadow-2xl hover:bg-blue-700 transition-all text-lg">
-                    최종 분석 결과 보기
+            <div class="flex flex-row justify-center items-center gap-4 mb-6">
+                <button onclick="backToStage2()" class="text-slate-500 font-bold p-2 text-sm">← 이전 단계</button>
+                <button onclick="finalize()" id="finalizeBtn" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition-all text-base">
+                    결과 보기
                 </button>
             </div>
         </div>
 
         <!-- Stage 4: Result -->
         <div id="result" class="hidden stage-transition">
-            <div class="bg-white rounded-3xl shadow-2xl p-6 sm:p-12 text-center border border-white relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-full h-1.5 bg-blue-500"></div>
-                <h2 class="text-2xl sm:text-4xl font-black text-slate-900 mb-8 sm:mb-12">나의 최종 3가지 핵심 가치</h2>
+            <div class="bg-white rounded-3xl shadow-xl p-4 sm:p-8 text-center border border-white relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
+                <h2 class="text-xl sm:text-3xl font-black text-slate-900 mb-6 sm:mb-8">나의 최종 3가지 핵심 가치</h2>
                 
-                <div id="finalValues" class="grid grid-cols-1 sm:flex sm:flex-wrap justify-center gap-3 sm:gap-6 mb-10"></div>
+                <div id="finalValues" class="grid grid-cols-1 sm:flex sm:flex-wrap justify-center gap-4 mb-8"></div>
                 
-                <div class="bg-slate-50 p-6 sm:p-10 rounded-2xl text-left border border-slate-200 max-w-4xl mx-auto shadow-inner">
-                    <h3 class="font-bold text-slate-900 text-xl mb-4 flex items-center gap-2">
-                        <span class="bg-blue-600 w-1.5 h-6 rounded-full"></span>
+                <div class="bg-slate-50 p-4 sm:p-6 rounded-xl text-left border border-slate-200 max-w-2xl mx-auto shadow-inner">
+                    <h3 class="font-bold text-slate-900 text-base sm:text-xl mb-3 flex items-center gap-2">
+                        <span class="bg-blue-600 w-1 h-5 rounded-full"></span>
                         나의 가치 철학 분석
                     </h3>
-                    <div id="aiAnalysis" class="text-slate-700 leading-relaxed text-sm sm:text-lg space-y-4"></div>
+                    <div id="aiAnalysis" class="text-slate-700 leading-relaxed text-xs sm:text-base space-y-2"></div>
                 </div>
                 
-                <button onclick="resetApp()" class="mt-10 text-slate-400 hover:text-blue-600 text-sm">처음부터 다시 하기</button>
+                <button onclick="resetApp()" class="mt-8 text-slate-400 hover:text-blue-600 text-xs">처음부터 다시 하기</button>
             </div>
         </div>
     </div>
 
     <!-- 확인 모달 UI -->
     <div id="confirmModal">
-        <div class="bg-white rounded-3xl p-6 max-w-sm w-11/12 text-center shadow-2xl scale-in transform transition-all">
-            <div class="text-4xl mb-4">💡</div>
-            <h3 class="text-xl font-bold text-slate-800 mb-2">가치 제외 확인</h3>
-            <p id="modalMsg" class="text-slate-600 mb-6 text-sm">가치를 목록에서 제외하시겠습니까?</p>
-            <div class="flex gap-3">
-                <button onclick="closeModal()" class="flex-1 bg-slate-100 text-slate-500 py-3 rounded-xl font-bold hover:bg-slate-200 transition-colors">취소</button>
-                <button onclick="confirmDeletion()" class="flex-1 bg-red-500 text-white py-3 rounded-xl font-bold hover:bg-red-600 shadow-lg shadow-red-200 transition-colors">제외하기</button>
+        <div class="bg-white rounded-2xl p-5 max-w-xs w-11/12 text-center shadow-2xl transform transition-all">
+            <div class="text-3xl mb-3">💡</div>
+            <h3 class="text-lg font-bold text-slate-800 mb-1">가치 제외 확인</h3>
+            <p id="modalMsg" class="text-slate-600 mb-5 text-xs">가치를 목록에서 제외하시겠습니까?</p>
+            <div class="flex gap-2">
+                <button onclick="closeModal()" class="flex-1 bg-slate-100 text-slate-500 py-2 rounded-lg font-bold text-sm">취소</button>
+                <button onclick="confirmDeletion()" class="flex-1 bg-red-500 text-white py-2 rounded-lg font-bold text-sm shadow-md">제외</button>
             </div>
         </div>
     </div>
@@ -336,7 +332,7 @@
 
         let selectedCards = new Set();
         let itemToPendingDelete = null;
-        let currentFilteringStage = 2; // 2 또는 3
+        let currentFilteringStage = 2; 
 
         function init() {
             const container = document.getElementById('cardContainer');
@@ -347,13 +343,13 @@
                 flipCard.innerHTML = `
                     <div class="flip-card-inner">
                         <div class="flip-card-front" onclick="handleFlip(this.parentElement.parentElement)">
-                            <div class="text-[9px] text-slate-300 mb-4 uppercase tracking-tighter">Flip to see</div>
-                            <div class="text-base sm:text-lg font-bold">${item.name}</div>
+                            <div class="text-[8px] text-slate-300 mb-2 uppercase tracking-tighter">Flip</div>
+                            <div class="text-sm sm:text-base font-bold">${item.name}</div>
                         </div>
                         <div class="flip-card-back" onclick="handleFlip(this.parentElement.parentElement)">
-                            <div class="text-xs font-bold mb-2 opacity-80 uppercase tracking-widest">${item.name}</div>
-                            <div class="text-[11px] sm:text-[13px] leading-snug mb-4 px-1">${item.desc}</div>
-                            <button onclick="toggleSelect('${item.name}', event)" class="select-btn bg-white text-blue-600 w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-md active:scale-95 transition-transform">선택하기</button>
+                            <div class="text-[9px] font-bold mb-1 opacity-80 uppercase tracking-widest">${item.name}</div>
+                            <div class="text-[10px] sm:text-[11px] leading-tight mb-2 px-1">${item.desc}</div>
+                            <button onclick="toggleSelect('${item.name}', event)" class="select-btn bg-white text-blue-600 w-full py-1.5 rounded-lg font-bold text-[10px] sm:text-xs shadow-sm active:scale-95 transition-transform">선택</button>
                         </div>
                     </div>
                 `;
@@ -375,14 +371,14 @@
             if (selectedCards.has(name)) {
                 selectedCards.delete(name);
                 inner.classList.remove('selected-wrapper');
-                btn.innerText = "선택하기";
-                btn.className = "select-btn bg-white text-blue-600 w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-md active:scale-95 transition-transform";
+                btn.innerText = "선택";
+                btn.className = "select-btn bg-white text-blue-600 w-full py-1.5 rounded-lg font-bold text-[10px] sm:text-xs shadow-sm active:scale-95 transition-transform";
             } else {
                 playSound('select');
                 selectedCards.add(name);
                 inner.classList.add('selected-wrapper');
                 btn.innerText = "✓ 선택됨";
-                btn.className = "select-btn bg-green-400 text-white w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-inner active:scale-95 transition-transform";
+                btn.className = "select-btn bg-green-400 text-white w-full py-1.5 rounded-lg font-bold text-[10px] sm:text-xs shadow-inner active:scale-95 transition-transform";
             }
             updateUI();
         }
@@ -394,11 +390,11 @@
             if (count >= 10) {
                 btn.disabled = false;
                 btn.classList.replace('bg-slate-300', 'bg-blue-600');
-                btn.innerText = "2단계로 이동하기";
+                btn.innerText = "2단계 이동";
             } else {
                 btn.disabled = true;
                 btn.classList.replace('bg-blue-600', 'bg-slate-300');
-                btn.innerText = `${10 - count}개 더 선택해주세요`;
+                btn.innerText = `${10 - count}개 더 선택`;
             }
         }
 
@@ -438,10 +434,10 @@
             Array.from(selectedCards).forEach(name => {
                 const item = allValues.find(v => v.name === name);
                 const card = document.createElement('div');
-                card.className = "bg-blue-500 text-white p-4 rounded-2xl aspect-square flex flex-col justify-center items-center text-center relative overflow-hidden active:bg-red-500 transition-colors";
+                card.className = "bg-blue-500 text-white p-3 rounded-xl aspect-square flex flex-col justify-center items-center text-center relative overflow-hidden active:bg-red-500 transition-colors";
                 card.innerHTML = `
-                    <div class="font-bold text-lg mb-1">${item.name}</div>
-                    <div class="text-[9px] opacity-70 line-clamp-2 px-1">제외하려면 클릭</div>
+                    <div class="font-bold text-base mb-0.5">${item.name}</div>
+                    <div class="text-[8px] opacity-70">제외 클릭</div>
                 `;
                 card.onclick = () => openModal(name);
                 container.appendChild(card);
@@ -453,12 +449,12 @@
             const btn = document.getElementById(buttonId);
             if (selectedCards.size === targetCount) {
                 btn.disabled = false;
-                btn.className = "w-full sm:w-auto bg-green-600 text-white px-12 py-4 rounded-2xl font-bold text-lg shadow-xl active:scale-95 transition-transform";
-                btn.innerText = buttonId === 'stage3Btn' ? "3단계(최종)로 이동" : "최종 분석 보기";
+                btn.className = "w-full sm:w-auto bg-green-600 text-white px-8 py-3 rounded-xl font-bold text-base shadow-lg active:scale-95 transition-transform";
+                btn.innerText = buttonId === 'stage3Btn' ? "3단계 이동" : "최종 분석 보기";
             } else {
                 btn.disabled = true;
-                btn.className = "w-full sm:w-auto bg-slate-300 text-white px-12 py-4 rounded-2xl font-bold text-lg opacity-50";
-                btn.innerText = `${selectedCards.size}개 (${targetCount}개까지 줄이기)`;
+                btn.className = "w-full sm:w-auto bg-slate-300 text-white px-8 py-3 rounded-xl font-bold text-base opacity-50";
+                btn.innerText = `${selectedCards.size}개 (${targetCount}개 줄이기)`;
             }
         }
 
@@ -498,15 +494,15 @@
             final.forEach(name => {
                 const item = allValues.find(v => v.name === name);
                 const card = document.createElement('div');
-                card.className = "result-card bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-3xl shadow-xl p-5 flex flex-col items-center justify-center text-center mx-auto";
-                card.innerHTML = `<div class="font-bold text-xl mb-3">${item.name}</div><div class="text-[10px] opacity-80 leading-tight">${item.desc}</div>`;
+                card.className = "result-card bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-2xl shadow-lg p-4 flex flex-col items-center justify-center text-center mx-auto";
+                card.innerHTML = `<div class="font-bold text-lg mb-2">${item.name}</div><div class="text-[10px] opacity-80 leading-tight">${item.desc}</div>`;
                 resDiv.appendChild(card);
             });
 
             document.getElementById('aiAnalysis').innerHTML = `
                 <p>수많은 가치 중 당신이 남긴 <b>[${final.join(', ')}]</b>은 당신의 삶을 지탱하는 가장 단단한 정수입니다.</p>
                 <p>3단계의 고심을 거쳐 선택된 이 가치들은 당신이 인생의 갈림길에 섰을 때 가장 선명한 해답을 줄 것입니다. 이 3가지 키워드를 항상 기억하고 나침반으로 삼으세요.</p>
-                <p class="font-bold text-blue-600 mt-6 text-lg text-center">"가장 본질적인 3가지가 당신의 삶을 위대하게 만듭니다."</p>
+                <p class="font-bold text-blue-600 mt-4 text-sm sm:text-base text-center">"가장 본질적인 3가지가 당신의 삶을 위대하게 만듭니다."</p>
             `;
         }
 
